@@ -10,17 +10,13 @@ It is pretty simple.
 
 ## Usage
 
-Before you use this script you must edit it and add
-* Your username
-* The server you are mirroring from (eg. https://git.example.com)
-* The server you are mirroring to without (eg. github.com)
-* A list of the repositories you will be mirroring
-
-After that you can simply type,
-
 ```shell
 sh mirrorgit.sh
 ```
+
+The script creates a file on your home directory to save configuration
+
+The file can be located and be edited in ~/.mirrorgitrc
 
 ## Dependencies
 * Git (obviously)

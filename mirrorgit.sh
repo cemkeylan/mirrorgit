@@ -16,28 +16,37 @@
 ##    You should have received a copy of the GNU General Public License
 ##    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-##### IMPORTANT ######
-## You must have an ssh key on the mirror repository in order to be able
-## to push your mirrors
-SSH="NO"
-## After you are sure you have ssh keys on the repo, remove or 
-## comment this line
-######################
+initialize() {\
+	clear
+	printf "███╗   ███╗██╗██████╗ ██████╗  ██████╗ ██████╗  ██████╗ ██╗████████╗ \n████╗ ████║██║██╔══██╗██╔══██╗██╔═══██╗██╔══██╗██╔════╝ ██║╚══██╔══╝ \n██╔████╔██║██║██████╔╝██████╔╝██║   ██║██████╔╝██║  ███╗██║   ██║ \n██║╚██╔╝██║██║██╔══██╗██╔══██╗██║   ██║██╔══██╗██║   ██║██║   ██║ \n██║ ╚═╝ ██║██║██║  ██║██║  ██║╚██████╔╝██║  ██║╚██████╔╝██║   ██║ \n╚═╝     ╚═╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚═╝   ╚═╝ \n"
+	printf "\nHello, I see you don't have a configuration file on $HOME/.mirrorgitrc\n\nLet's set it up!\nYou need to enter your git username first\nUsername: "
+	read username
+	printf "Now, add the domain you will be mirroring from (eg. "https://git.example.com")\nURL: "
+	read fromhost
+	printf "You should now add the domain you will be mirroring to.\nIMPORTANT: You must have your ssh keys deployed on this git repository\nDo you understand? (y/n) "
+	read answer
+	case $answer in
+		y*)
+			printf "Mirror Host should not contain http (eg. \"github.com\")\nEnter host name: "
+			read tohost
+			printf "\
+USERNAME=\"$username\"\n\n\
+## Add only the host name\n\
+FROMHOST=\"$fromhost\"\n\
+## Mirrorhost should not contain https or http (eg. \"github.com\")\n\
+MIRRORHOST=\"$tohost\"\n" > $HOME/.mirrorgitrc
+			;;
+		*)
+				printf "Did you read the prompt carefully?\n" && exit 1
+			;;
+		esac			
+	printf "Repos you will be mirroring (leave spaces between repos)\nRepos: "
+	read repos
+	printf "REPONAMES=\"${repos}\"\n" >> $HOME/.mirrorgitrc
+}
 
-case $SSH in
-	NO) printf "Please configure the script and read the comments\n" && exit 1 ;;
-esac
-
-USERNAME=""
-
-## Add only the host name (eg. "https://github.com" )
-FROMHOST=""
-## Mirrorhost should not contain https or http (eg. "github.com")
-MIRRORHOST=""
-
-## Add the names of your repositories 
-## with only a space (eg. "repo1 repo2 repo3")
-REPONAMES=""
+[ -f $HOME/.mirrorgitrc ] || initialize
+source $HOME/.mirrorgitrc
 
 [ -z $USERNAME ] && printf "You must add your username to the script before you can use it\n" && exit 1
 [ -z $FROMHOST ] && printf "You must add your own git repo address beforeyou can use the script\n" && exit 1
@@ -61,5 +70,5 @@ do
 	cd $TEMPFOLD 
 done
 
-printf "Done\n"
+printf "\nDone\n"
 cd $ORIGFOLD
