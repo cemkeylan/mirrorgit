@@ -19,22 +19,25 @@
 initialize() {\
 	clear
 	printf "███╗   ███╗██╗██████╗ ██████╗  ██████╗ ██████╗  ██████╗ ██╗████████╗ \n████╗ ████║██║██╔══██╗██╔══██╗██╔═══██╗██╔══██╗██╔════╝ ██║╚══██╔══╝ \n██╔████╔██║██║██████╔╝██████╔╝██║   ██║██████╔╝██║  ███╗██║   ██║ \n██║╚██╔╝██║██║██╔══██╗██╔══██╗██║   ██║██╔══██╗██║   ██║██║   ██║ \n██║ ╚═╝ ██║██║██║  ██║██║  ██║╚██████╔╝██║  ██║╚██████╔╝██║   ██║ \n╚═╝     ╚═╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚═╝   ╚═╝ \n"
-	printf "\nHello, I see you don't have a configuration file on $HOME/.mirrorgitrc\n\nLet's set it up!\nYou need to enter your git username first\nUsername: "
+	printf "\nHello, I see you don't have a configuration file on $HOME/.mirrorgitrc\n\nLet's set it up!\n\nYou need to enter your git username first (leave blank if your server does not require a username)\nUsername: "
 	read username
-	printf "Now, add the domain you will be mirroring from (eg. "https://git.example.com")\nURL: "
+	printf "Now, add the domain you will be mirroring from\nFOR SSH: type 'git@example.com' or 'user@example.com'\nFOR HTTP(S): type 'http://git.host.com'\nURL: "
 	read fromhost
 	printf "You should now add the domain you will be mirroring to.\nIMPORTANT: You must have your ssh keys deployed on this git repository\nDo you understand? (y/n) "
 	read answer
 	case $answer in
 		y*)
-			printf "Mirror Host should not contain http (eg. \"github.com\")\nEnter host name: "
+			printf "You should type your mirror's host name like 'git@host.com' or 'user@host.com'\nEnter host name: "
 			read tohost
+			printf "Enter the mirror username if you have one\nUsername: "
+			read touser
 			printf "\
-USERNAME=\"$username\"\n\n\
+FROMUSER=\"$username\"\n\n\
 ## Add only the host name\n\
 FROMHOST=\"$fromhost\"\n\
 ## Mirrorhost should not contain https or http (eg. \"github.com\")\n\
-MIRRORHOST=\"$tohost\"\n" > $HOME/.mirrorgitrc
+MIRRORHOST=\"$tohost\"\n\
+MIRRORUSER=\"$touser\"\n" > $HOME/.mirrorgitrc
 			;;
 		*)
 				printf "Did you read the prompt carefully?\n" && exit 1
@@ -48,7 +51,6 @@ MIRRORHOST=\"$tohost\"\n" > $HOME/.mirrorgitrc
 [ -f $HOME/.mirrorgitrc ] || initialize
 source $HOME/.mirrorgitrc
 
-[ -z $USERNAME ] && printf "You must add your username to the script before you can use it\n" && exit 1
 [ -z $FROMHOST ] && printf "You must add your own git repo address beforeyou can use the script\n" && exit 1
 [ -z $MIRRORHOST ] && printf "You must add the git repo address you will be mirroring to before you can use this script\n" && exit 1
 [ -z "$REPONAMES" ] && printf "You must add repositories before you can use this script\n" && exit 1
@@ -58,15 +60,41 @@ case $MIRRORHOST in
 	http://*) MIRRORHOST=$(echo $MIRRORHOST | cut -c 8-) ;;
 esac
 
+case $FROMHOST in
+	http*)
+		if [ -z $FROMUSER ]
+		then
+			FROMURL="$FROMHOST/"
+		else
+			FROMURL="$FROMHOST/$FROMUSER/"
+		fi
+		;;
+	*@*)
+		if [ -z $FROMUSER ]
+		then
+			FROMURL="$FROMHOST:"
+		else
+			FROMURL="$FROMHOST:$FROMUSER/"
+		fi
+		;;
+esac
+
+if [ -z $MIRRORUSER ]
+then
+	MIRRORURL="$MIRRORHOST:"
+else
+	MIRRORURL="$MIRRORHOST:$MIRRORUSER/"
+fi
+
 ORIGFOLD=$PWD
 TEMPFOLD=$(mktemp -d /tmp/gitmirror-XXXXXX)
 
 cd $TEMPFOLD
 for i in $REPONAMES
 do
-	git clone --mirror $FROMHOST/$USERNAME/$i || exit 1
+	git clone --mirror $FROMURL$i || exit 1
 	cd "$i".git
-	git push --mirror git@$MIRRORHOST:$USERNAME/$i || exit 1
+	git push --mirror $MIRRORURL$i || exit 1
 	cd $TEMPFOLD 
 done
 

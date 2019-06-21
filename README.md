@@ -22,6 +22,3 @@ The file can be located and be edited in ~/.mirrorgitrc
 * Git (obviously)
 * SSH keys deployed on the mirror repository
 
-## TODO
-
-Add protocol choice for the original repository
