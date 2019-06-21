@@ -49,7 +49,7 @@ MIRRORUSER=\"$touser\"\n" > $HOME/.mirrorgitrc
 }
 
 [ -f $HOME/.mirrorgitrc ] || initialize
-source $HOME/.mirrorgitrc
+. $HOME/.mirrorgitrc
 
 [ -z $FROMHOST ] && printf "You must add your own git repo address beforeyou can use the script\n" && exit 1
 [ -z $MIRRORHOST ] && printf "You must add the git repo address you will be mirroring to before you can use this script\n" && exit 1
