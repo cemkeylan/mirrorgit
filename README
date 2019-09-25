@@ -1,0 +1,29 @@
+mirrorgit
+=========
+
+Git mirroring script
+
+Setting up a git mirror is hard, especially if you are trying to mirror your repository to Microsoft's Github. Microsoft does not want you to self-host, so they don't present you with any option for mirroring.
+
+These problems may be solved if you use something like a post-receive hook, but not all self-hosted git repositories use vanilla git. This script is intended for solutions that do not give you the access to post-receive hooks, like Gitlab or Gitea.
+
+This shell script:
+* Fetches your repositories to a temporary directory
+* Pushes them to the mirror repository
+
+Pretty simple.
+
+
+Usage
+-----
+
+sh mirrorgit.sh
+
+The script creates a file on your home directory to save configuration and can be edited in ~/.mirrorgitrc
+
+
+Dependencies
+------------
+* Git (obviously)
+* SSH keys deployed on the mirror repository
+
